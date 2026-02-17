@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Scrape Game - Revamped</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+                /* ======================================= */
+        /* CSS (UI and Aesthetics) - MOBILE FIXED  */
+        /* ======================================= */
+        
+        :root {
+            --bg-color: #1a002e; 
+            --panel-color: #380a5e; 
+            --accent-color: #ff33ff; 
+            --gold-color: #ffd700; 
+            --btn-color: #8a2be2; 
+            --diamond-color: #00bfff; 
+            --bomb-color: #ff4500; 
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            color: #fff;
+            padding: 10px; 
+            min-height: 100vh;
+            margin: 0;
+            perspective: 1000px; 
+        }
+
+        .game-container {
+            background-color: var(--panel-color);
+            padding: 15px; 
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(255, 51, 255, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.1); 
+            text-align: center;
+            width: 95%; 
+            max-width: 550px; 
+            position: relative; 
+            border: 4px solid var(--accent-color);
+            transition: all 0.5s ease-in-out;
+            box-sizing: border-box; 
+        }
+
+        h1 {
+            color: var(--accent-color);
+            font-weight: 700;
+            font-size: clamp(1.2rem, 7vw, 2.5rem); 
+            text-shadow: 0 0 15px var(--accent-color);
+            margin: 10px 0 20px 0;
+            letter-spacing: 2px;
+        }
+
+        .info-panel {
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            padding: 10px;
+            background-color: #2c084f; 
+            border-radius: 10px;
+            border: 2px solid #7c4d9b;
+        }
+
+        .info-item {
+            font-size: clamp(0.6rem, 2.5vw, 0.9rem); 
+            font-weight: 600;
+            color: #d1b4ff;
+            border-right: 1px solid #7c4d9b;
+        }
+        
+        .info-item:last-child { border-right: none; }
+        
+        .info-item strong {
+            display: block;
+            font-size: clamp(0.8rem, 4vw, 1.5rem);
+            margin-top: 5px;
+        }
+
+        .topup-trigger-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 20px;
+            height: 20px;
+            background-color: var(--gold-color);
+            color: var(--bg-color);
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        
+        .controls-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .bet-control, .bomb-control, .mode-control {
+            display: flex;
+            flex-direction: column; 
+            gap: 5px;
+        }
+        
+        input, select, #open-selector-button {
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            background-color: #2c084f; 
+            color: var(--gold-color);
+            border: 2px solid var(--accent-color);
+            width: 100% !important; 
+            box-sizing: border-box;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            width: 100%; 
+            aspect-ratio: 1 / 1; 
+            margin: 15px auto;
+            border: 3px solid var(--accent-color);
+            border-radius: 10px;
+            padding: 5px;
+            background-color: #130022;
+            box-sizing: border-box;
+        }
+
+        .cell-wrapper {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+        
+        .cell {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(1rem, 6vw, 2rem); 
+            cursor: pointer;
+        }
+
+        .cell-front {
+            background-color: var(--btn-color);
+            border: 1px solid #5a5a9e;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .cell-back { transform: rotateY(180deg); }
+        .cell-wrapper.revealed { transform: rotateY(180deg); }
+        .cell-wrapper.selected .cell-front { background-color: #008000; border-color: #00ff00; }
+
+        .cell-back.diamond { background-color: var(--diamond-color); box-shadow: 0 0 10px var(--diamond-color); }
+        .cell-back.bomb { background-color: var(--bomb-color); box-shadow: 0 0 10px var(--bomb-color); }
+
+        .control-buttons { 
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .control-buttons button {
+            flex: 1;
+            padding: 15px 5px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        #startButton { background-color: var(--accent-color); color: var(--bg-color); box-shadow: 0 4px 0 #b300b3; }
+        #cashoutButton { background-color: var(--gold-color); color: var(--bg-color); box-shadow: 0 4px 0 #b38e00; }
+        #cashoutButton:disabled { background-color: #6d6d6d; color: #c9c9c9; box-shadow: none; transform: none; }
+
+        .message-box { min-height: 30px; color: var(--gold-color); margin-top: 15px; font-size: 1.1rem; font-weight: 700; }
+
+        .modal-overlay {
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--panel-color);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            width: 85%;
+            max-width: 400px;
+            border: 2px solid var(--accent-color);
+            box-sizing: border-box;
+        }
+        
+        /* Animasi Glow saat SELECTED */
+        .cell-wrapper.selected {
+            animation: pulseGlow 0.8s infinite alternate; 
+            /* Tambahkan sedikit scale */
+            transform: scale(1.05); 
+        }
+
+        @keyframes pulseGlow {
+            from {
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); /* Glow awal */
+            }
+            to {
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.9); /* Glow saat puncak */
+            }
+        }
+        
+        /* Efek hover non-selected */
+        .cell-wrapper:hover:not(.revealed):not(.selected) {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+
+        .cell {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden; /* Sisi belakang tidak terlihat */
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Sisi Depan (Tidak Terungkap) */
+        .cell-front {
+            background-color: var(--btn-color);
+            border: 2px solid #5a5a9e;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+            color: transparent;
+            z-index: 2; 
+            transform: rotateY(0deg);
+        }
+        .cell-front:hover {
+            background-color: #9955ff;
+        }
+
+        /* Sisi Belakang (Terungkap) */
+        .cell-back {
+            background-color: #1e003a; /* Warna default untuk belakang */
+            border: 2px solid transparent; 
+            color: #fff;
+            z-index: 1;
+            transform: rotateY(180deg); /* Diputar agar terlihat setelah flip */
+        }
+        
+        /* PENTING: Gaya Khusus saat terpilih */
+        .cell-wrapper.selected .cell-front { 
+            background-color: #008000; /* Green Selected */
+            border: 2px solid #00ff00;
+            box-shadow: inset 0 0 5px #fff;
+            color: transparent; /* HILANGKAN CENTANG */
+            transition: all 0.2s ease-out; 
+        }
+
+        .cell-wrapper.revealed {
+            transform: rotateY(180deg); 
+            pointer-events: none;
+        }
+
+        .cell-back.diamond {
+            background-color: var(--diamond-color); 
+            border: 2px solid #e0ffff;
+            box-shadow: 0 0 15px var(--diamond-color), inset 0 0 5px #fff;
+            text-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .cell-back.bomb {
+            background-color: var(--bomb-color);
+            border: 2px solid #ffa07a;
+            box-shadow: 0 0 15px var(--bomb-color), inset 0 0 5px #000;
+            color: #000;
+        }
+
+        /* Primary Buttons */
+        .control-buttons { 
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; 
+            gap: 10px;
+        }
+
+        .control-buttons button {
+            padding: 18px 35px;
+            font-size: 1.3em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1.5); /* Animasi Pop */
+            font-weight: 700;
+            flex: 1 1 30%; 
+            max-width: 150px;
+            letter-spacing: 1px;
+        }
+
+        #startButton {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            box-shadow: 0 7px 0 #b300b3; 
+        }
+
+        #startButton:hover:not(:disabled) {
+            background-color: #ff4dff;
+            box-shadow: 0 3px 0 #b300b3;
+            transform: translateY(4px) scale(1.02);
+        }
+        
+        #startButton:disabled {
+            background-color: #6d6d6d;
+            color: #c9c9c9;
+            box-shadow: 0 3px 0 #4f4f4f;
+            cursor: not-allowed;
+        }
+
+        #cashoutButton {
+            background-color: var(--gold-color);
+            color: var(--bg-color);
+            box-shadow: 0 7px 0 #b38e00;
+        }
+
+        #cashoutButton:hover:not(:disabled) {
+            background-color: #ffd74a;
+            box-shadow: 0 3px 0 #b38e00;
+            transform: translateY(4px) scale(1.02);
+        }
+        
+        #cashoutButton:disabled {
+            background-color: #6d6d6d;
+            color: #c9c9c9;
+            box-shadow: 0 3px 0 #4f4f4f;
+            cursor: not-allowed;
+        }
+
+        /* Topup button lama dihapus, menyisakan ruang kosong */
+        /* #topupButton { ... } */
+
+
+        .message-box {
+            min-height: 40px;
+            color: var(--gold-color);
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+        }
+
+        /* Modal Overlays */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.95);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background-color: var(--panel-color);
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 30px var(--accent-color);
+            animation: modalFadeIn 0.3s;
+            width: 80%;
+            max-width: 400px;
+            border: 2px solid var(--accent-color);
+        }
+
+        #selector-modal-content {
+            background-color: #3f1068; 
+            box-shadow: 0 0 40px var(--gold-color);
+            border: 3px solid var(--gold-color);
+            padding: 40px 30px;
+        }
+
+        /* Slider Styling */
+        .slider-container {
+            margin: 25px 0;
+            padding: 0 10px;
+        }
+
+        #multiplier-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            background: #7c4d9b;
+            border-radius: 5px;
+        }
+        #multiplier-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--gold-color);
+            cursor: pointer;
+            box-shadow: 0 0 5px var(--gold-color);
+        }
+
+        #slider-value-display {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--gold-color);
+            margin-top: 10px;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+        }
+
+        .risk-info {
+            font-size: 1.1em;
+            color: #ccc;
+            margin-top: 10px;
+        }
+
+        .modal-payout {
+            font-size: 3em;
+            font-weight: 700;
+            color: var(--gold-color);
+        }
+
+        .modal-close {
+            background-color: var(--accent-color) !important;
+            color: var(--bg-color) !important;
+            box-shadow: 0 4px 0 #b300b3 !important;
+        }
+        .modal-close:hover {
+            box-shadow: 0 2px 0 #b300b3 !important;
+            transform: translateY(2px) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>MINES GAME SIMULATION</h1>
+
+        <div class="info-panel">
+            <div class="info-item">BALANCE 
+                <strong>
+                    <span id="current-balance">$100.00</span>
+                    <span id="topup-icon-trigger" class="topup-trigger-icon">+</span>
+                </strong>
+            </div>
+            <div class="info-item">PAYOUT <strong><span id="current-payout">$0.00</span></strong></div>
+            <div class="info-item">MULTIPLIER <strong>x<span id="multiplier-display">1.00</span></strong></div>
+        </div>
+        
+        <div class="controls-area">
+            <div class="bomb-control">
+                <button id="open-selector-button" class="cashout-button">Select Multiplier & Risk</button>
+                <span id="risk-summary-info" style="color: var(--accent-color); font-weight: 600;">(4 Bombs / 1.20x per Diamond)</span>
+            </div>
+            
+            <div class="mode-control">
+                <label for="game-mode-select">GAME MODE:</label>
+                <select id="game-mode-select">
+                    <option value="single">Single Click (Normal)</option>
+                    <option value="selection">Selection Bet (High Risk +1.2x)</option>
+                </select>
+            </div>
+            
+            <div class="bet-control">
+                <label for="bet-input">BET AMOUNT ($):</label>
+                <input type="number" id="bet-input" value="1.00" min="0.1" max="10000" step="0.01">
+            </div>
+
+        </div>
+
+        <div class="grid-container" id="game-grid">
+            </div>
+
+        <div class="control-buttons">
+            <button id="startButton">PLACE BET & START</button>
+            <button id="cashoutButton" disabled>CASH OUT</button>
+            </div>
+        
+        <div class="message-box" id="message">SET RISK LEVEL AND PRESS START.</div>
+
+        <div id="cashout-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">CASH OUT SUCCESSFUL!</div>
+                <p>YOU SECURED A WINNING OF:</p> 
+                <div class="modal-payout" id="modal-payout-amount"></div>
+                <button class="modal-close" onclick="closeModal('cashout-modal')">CONTINUE</button>
+            </div>
+        </div>
+        
+        <div id="selector-modal" class="modal-overlay">
+            <div class="modal-content" id="selector-modal-content">
+                <div class="modal-title">SET RISK LEVEL</div>
+                
+                <div class="slider-container">
+                    <label style="font-size: 1.2em;">Multiplier per Diamond (M):</label>
+                    <input type="range" id="multiplier-slider" 
+                           min="1.1" max="2.0" step="0.1" value="1.20">
+                    <div id="slider-value-display">1.20x</div>
+                    <div class="risk-info" id="slider-risk-info">4 Bombs (High Risk)</div>
+                </div>
+
+                <button class="modal-close" id="confirm-selection-button">CONFIRM SELECTION</button>
+            </div>
+        </div>
+        
+        <div id="promo-code-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title" style="color: var(--accent-color);">ENTER PROMO CODE</div>
+                <p>Enter the special code to unlock the top up feature:</p> 
+                <input type="text" id="promo-code-input" placeholder="enter code" 
+                       style="padding: 10px; margin: 15px 0; width: 80%; text-align: center; border-radius: 5px; border: 2px solid var(--accent-color);">
+                <div id="promo-code-message" style="color: #dc3545; margin-bottom: 15px;"></div>
+                <button class="modal-close" id="confirm-promo-code">CONFIRM CODE</button>
+                <button class="modal-close" style="margin-top: 10px;" onclick="closeModal('promo-code-modal')">CANCEL</button>
+            </div>
+        </div>
+
+        <div id="topup-amount-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title" style="color: var(--gold-color);">ENTER TOP UP AMOUNT</div>
+                <p>Code **zet77** accepted! Min Top Up is $10.00.</p> 
+                <input type="number" id="topup-amount-input" value="50.00" min="10.00" max="10000.00" step="0.01" 
+                       style="padding: 10px; margin: 15px 0; width: 80%; text-align: center; border-radius: 5px; border: 2px solid var(--gold-color);">
+                <div id="topup-amount-message" style="color: #dc3545; margin-bottom: 15px;"></div>
+                <button class="modal-close" id="confirm-topup-amount" style="background-color: var(--gold-color)!important;">CONFIRM TOP UP</button>
+                <button class="modal-close" style="margin-top: 10px;" onclick="closeModal('topup-amount-modal')">CANCEL</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ======================================= */
+        /* JAVASCRIPT (Game Logic & Top Up) - REVAMPED */
+        /* ======================================= */
+
+        const GRID_SIZE = 5; 
+        const INITIAL_BALANCE = 100.00;
+
+        // Configuration
+        let BOMB_COUNT = 4; 
+        let MULTIPLIER_PER_DIAMOND = 1.20; 
+        const MIN_SELECTION = 5;
+        const SELECTION_BONUS_MULTIPLIER = 1.20; 
+
+        // Game State
+        let grid = [];
+        let isGameActive = false;
+        let currentBet = 0;
+        let currentMultiplier = 1.00;
+        let currentPayout = 0.00;
+        let cellsRevealed = 0;
+        let totalBalance = INITIAL_BALANCE;
+        let selectedCellsIndex = [];
+        
+        // KUNCI: State Khusus untuk mengontrol klik di Fase Pemilihan (Mode Seleksi)
+        let isSelectingBlocks = false; 
+
+        // DOM Elements
+        const gameGrid = document.getElementById('game-grid');
+        const startButton = document.getElementById('startButton');
+        const cashoutButton = document.getElementById('cashoutButton');
+        const betInput = document.getElementById('bet-input');
+
+        const openSelectorButton = document.getElementById('open-selector-button');
+        const selectorModal = document.getElementById('selector-modal');
+        const multiplierSlider = document.getElementById('multiplier-slider');
+        const sliderValueDisplay = document.getElementById('slider-value-display');
+        const sliderRiskInfo = document.getElementById('slider-risk-info');
+        const confirmSelectionButton = document.getElementById('confirm-selection-button');
+        const riskSummaryInfo = document.getElementById('risk-summary-info'); 
+
+        const multiplierDisplay = document.getElementById('multiplier-display'); 
+        const currentPayoutDisplay = document.getElementById('current-payout');
+        const currentBalanceDisplay = document.getElementById('current-balance');
+        const messageDisplay = document.getElementById('message');
+        const cashoutModal = document.getElementById('cashout-modal');
+        const modalPayoutAmount = document.getElementById('modal-payout-amount');
+
+        // Elemen Top Up BARU
+        const topupIconTrigger = document.getElementById('topup-icon-trigger');
+        const promoCodeModal = document.getElementById('promo-code-modal');
+        const promoCodeInput = document.getElementById('promo-code-input');
+        const confirmPromoCodeButton = document.getElementById('confirm-promo-code');
+        const promoCodeMessage = document.getElementById('promo-code-message');
+
+        const topupAmountModal = document.getElementById('topup-amount-modal');
+        const topupAmountInput = document.getElementById('topup-amount-input');
+        const confirmTopupAmountButton = document.getElementById('confirm-topup-amount');
+        const topupAmountMessage = document.getElementById('topup-amount-message');
+
+        // Elemen Mode
+        const gameModeSelect = document.getElementById('game-mode-select');
+
+
+        // Helper function for clean currency formatting (Untuk Payout, Bet, Modal)
+        function formatCurrency(amount) {
+            // Pastikan amount adalah angka dan bukan string singkatan
+            const num = typeof amount === 'string' ? parseFloat(amount.replace(/[^0-9.]/g, '')) : amount;
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2,
+            }).format(num);
+        }
+
+        // **FUNGSI BARU UNTUK FORMAT BALANCE SINGKAT ($1K, $1M) **
+        function formatBalance(amount) {
+            const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+            
+            // Jika angka kurang dari 1,000, gunakan format mata uang biasa
+            if (Math.abs(num) < 1000) {
+                return formatCurrency(num);
+            }
+
+            const units = [
+                { value: 1e12, symbol: "T" },
+                { value: 1e9, symbol: "B" },
+                { value: 1e6, symbol: "M" },
+                { value: 1e3, symbol: "K" },
+            ];
+
+            // Cari unit yang paling cocok
+            const unit = units.find(u => Math.abs(num) >= u.value);
+
+            // Hitung dan format angka yang disingkat
+            if (unit) {
+                // Bulatkan ke 2 desimal atau kurang, dan tambahkan simbol
+                return '$' + (num / unit.value).toFixed(2).replace(/\.00$/, '') + unit.symbol;
+            }
+
+            // Fallback ke format mata uang normal jika ada kesalahan
+            return formatCurrency(num);
+        }
+        // ----------------------------------------------------------------
+
+
+        // CORE LOGIC: Function to calculate BOMB COUNT based on multiplier
+        function getBombCountFromMultiplier(multiplier) {
+            const M = parseFloat(multiplier);
+            if (M < 1.1 || M > 2.0) return 4; 
+
+            let bombs = (M - 1.1) * 20 + 2;
+            
+            return Math.round(bombs); 
+        }
+
+        // Modal Functions
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // Function to update the slider display in the modal
+        function updateSliderDisplay() {
+            const selectedMultiplier = parseFloat(multiplierSlider.value);
+            const bombCount = getBombCountFromMultiplier(selectedMultiplier);
+            
+            sliderValueDisplay.textContent = `${selectedMultiplier.toFixed(2)}x`;
+            sliderRiskInfo.textContent = `${bombCount} Bombs (${(GRID_SIZE * GRID_SIZE) - bombCount} Diamonds Left)`;
+        }
+
+        // Function to confirm and close the selector modal
+        function confirmSelection() {
+            const newMultiplier = parseFloat(multiplierSlider.value);
+            MULTIPLIER_PER_DIAMOND = newMultiplier;
+            BOMB_COUNT = getBombCountFromMultiplier(newMultiplier);
+            
+            riskSummaryInfo.textContent = `(${BOMB_COUNT} Bombs / ${MULTIPLIER_PER_DIAMOND.toFixed(2)}x per Diamond)`;
+            closeModal('selector-modal');
+            
+            showMessage("RISK LEVEL CONFIRMED. PRESS START TO PLACE YOUR BET.");
+            updateDisplay(); // Update display to reflect new config
+        }
+
+        // FUNGSI: Hitung asumsi payout untuk Selection Mode
+        function calculateAssumedPayout(numSelected) {
+            const bet = parseFloat(betInput.value);
+            
+            if (numSelected < MIN_SELECTION) {
+                multiplierDisplay.textContent = '1.00';
+                currentPayoutDisplay.textContent = formatCurrency(0.00);
+                return;
+            }
+            
+            let assumedMultiplier = 1.00;
+            for (let i = 0; i < numSelected; i++) {
+                assumedMultiplier *= MULTIPLIER_PER_DIAMOND;
+            }
+            
+            // Final Multiplier: Base Multiplier * Selection Mode Bonus * Perfect Bonus (Asumsi Maksimal)
+            let finalMultiplier = assumedMultiplier * SELECTION_BONUS_MULTIPLIER * 2.00; 
+            let finalPayout = bet * finalMultiplier;
+
+            multiplierDisplay.textContent = finalMultiplier.toFixed(2);
+            currentPayoutDisplay.textContent = formatCurrency(finalPayout);
+        }
+
+        // FUNGSI: Untuk Inisialisasi Struktur Game (Penempatan Bom)
+        function initializeGameStructure() {
+            grid = [];
+            let bombPlaced = 0;
+            const totalCells = GRID_SIZE * GRID_SIZE;
+
+            for (let i = 0; i < totalCells; i++) {
+                grid.push({ 
+                    isBomb: false, 
+                    isRevealed: false, 
+                    index: i 
+                });
+            }
+            while (bombPlaced < BOMB_COUNT) {
+                const randomIndex = Math.floor(Math.random() * totalCells);
+                if (!grid[randomIndex].isBomb) {
+                    grid[randomIndex].isBomb = true;
+                    bombPlaced++;
+                }
+            }
+            
+            currentMultiplier = 1.00;
+            currentPayout = 0.00;
+            cellsRevealed = 0;
+        }
+
+        function handleStartGame() {
+            const betValue = parseFloat(betInput.value);
+
+                        // 1. Validasi Bet
+            // PERBAIKAN: Validasi saldo HANYA jalan kalau TIDAK sedang memilih (isSelectingBlocks = false)
+            if (!isSelectingBlocks) {
+                if (isNaN(betValue) || betValue < 0.1 || betValue > 10000 || betValue > totalBalance) {
+                    showMessage(`INVALID BET. MIN $0.1 MAX $10,000. BALANCE: ${formatBalance(totalBalance)}.`);
+                    return;
+                }
+            }
+
+            // --- Logika Seleksi Mode ---
+            if (gameModeSelect.value === 'selection') {
+                
+                // Transisi 1: Tombol START -> Masuk Fase Pemilihan
+                if (startButton.textContent === "PLACE BET & START") {
+                    currentBet = betValue;
+                    totalBalance -= currentBet;
+                    
+                    
+                    initializeGameStructure(); 
+                    selectedCellsIndex = [];
+                    
+                    // AKTIFKAN state seleksi!
+                    isSelectingBlocks = true; 
+                    
+                    updateDisplay();
+                    renderGrid(); // Render grid untuk mode pemilihan
+                    showMessage(`SELECTION MODE: Choose ${MIN_SELECTION} cells. (${selectedCellsIndex.length}/${MIN_SELECTION})`);
+
+                    startButton.textContent = `CONFIRM SELECTION (0/${MIN_SELECTION})`;
+                    
+                    startButton.disabled = true; 
+                    openSelectorButton.disabled = true;
+                    topupIconTrigger.style.pointerEvents = 'none'; // Nonaktifkan topup saat game start
+                    gameModeSelect.disabled = true; 
+                    cashoutButton.disabled = true; 
+                    
+                    calculateAssumedPayout(selectedCellsIndex.length);
+
+                    return;
+                }
+                
+                // Transisi 2: Tombol CONFIRM -> Reveal Hasil
+                if (startButton.textContent.startsWith("CONFIRM SELECTION")) {
+                    if (selectedCellsIndex.length >= MIN_SELECTION) {
+                        
+                        // MATIKAN state seleksi sebelum reveal
+                        isSelectingBlocks = false; 
+
+                        startButton.textContent = "WAIT FOR RESULT";
+                        startButton.disabled = true;
+                        cashoutButton.disabled = true; 
+                        
+                        revealSelectionResults(true); 
+                        return;
+                    }
+                }
+            } 
+            
+            // --- Logika Single Click Mode (Normal) ---
+            if (!isGameActive && gameModeSelect.value === 'single') {
+                currentBet = betValue;
+                totalBalance -= currentBet;
+                
+                initializeGameStructure(); 
+                isGameActive = true;
+
+                updateDisplay();
+                renderGrid();
+                showMessage(`GAME STARTED! ${BOMB_COUNT} BOMBS ON BOARD. Click a cell.`);
+
+                startButton.disabled = true;
+                cashoutButton.disabled = true;
+                betInput.disabled = true;
+                openSelectorButton.disabled = true;
+                topupIconTrigger.style.pointerEvents = 'none'; // Nonaktifkan topup saat game start
+                gameModeSelect.disabled = true; 
+            }
+        }
+
+
+        // FUNGSI: Untuk mengungkapkan hasil pilihan dan menghitung bonus
+        function revealSelectionResults(isHighRiskMode) { 
+            let diamondsInSelection = 0;
+            let bombFound = false;
+            
+            document.querySelectorAll('.cell-wrapper').forEach(wrapper => {
+                wrapper.removeEventListener('click', handleCellClick);
+            });
+
+            // Revealing selection results
+            selectedCellsIndex.forEach((index, i) => {
+                const cell = grid[index];
+                cell.isRevealed = true;
+                
+                const cellWrapper = gameGrid.querySelector(`[data-index="${index}"]`);
+                const cellBack = cellWrapper ? cellWrapper.querySelector('.cell-back') : null;
+                
+                if (cellWrapper) {
+                     // Animasi flip 3D
+                     setTimeout(() => {
+                         cellWrapper.classList.remove('selected'); // Hapus class selected
+                         cellWrapper.classList.add('revealed');
+                         
+                         if (cellBack) {
+                            if (cell.isBomb) {
+                                cellBack.textContent = '💣';
+                                cellBack.classList.add('bomb');
+                                bombFound = true; 
+                            } else {
+                                cellBack.textContent = '💎';
+                                cellBack.classList.add('diamond');
+                                diamondsInSelection++;
+                            }
+                         }
+                     }, i * 70); // Jeda 70ms per sel untuk efek berurutan
+                }
+            });
+            
+            // Lanjutkan setelah semua animasi selesai
+            setTimeout(() => {
+                
+                // --- Logika HANGUS ---
+                if (isHighRiskMode && bombFound) {
+                    currentPayout = 0.00; 
+                    currentMultiplier = 0.00;
+                    updateDisplay();
+                    showMessage(`BOOM! Selection failed (Bomb found). Bet lost: ${formatCurrency(currentBet)}.`);
+                    endGame(false); 
+                    return;
+                }
+                
+                // --- Logika Penghitungan Payout High Risk Success ---
+                currentMultiplier = 1.00;
+                for (let i = 0; i < diamondsInSelection; i++) {
+                    currentMultiplier *= MULTIPLIER_PER_DIAMOND;
+                }
+                
+                let bonusMultiplier = 1.00;
+                let message = "";
+
+                if (isHighRiskMode && diamondsInSelection === selectedCellsIndex.length) {
+                    bonusMultiplier = 2.00; 
+                    currentMultiplier = currentMultiplier * SELECTION_BONUS_MULTIPLIER * bonusMultiplier; 
+                    message = `PERFECT! ${diamondsInSelection} DIAMONDS FOUND! **MODE BONUS x${SELECTION_BONUS_MULTIPLIER.toFixed(2)} + PERFECT x${bonusMultiplier.toFixed(2)}**!`;
+                } else if (isHighRiskMode && diamondsInSelection > 0) {
+                    currentMultiplier *= SELECTION_BONUS_MULTIPLIER; 
+                    message = `PARTIAL SUCCESS! ${diamondsInSelection} DIAMONDS FOUND. **MODE BONUS x${SELECTION_BONUS_MULTIPLIER.toFixed(2)}** applied.`;
+                } else if (isHighRiskMode && diamondsInSelection === 0) {
+                    currentMultiplier = 1.00; // Hanya mengembalikan bet
+                    message = `SAFE, but ZERO! No diamonds found. Bet returned (1.00x).`;
+                }
+
+                currentPayout = currentBet * currentMultiplier;
+                cellsRevealed += selectedCellsIndex.length;
+
+                updateDisplay();
+                showMessage(message + ` Total Multiplier x${currentMultiplier.toFixed(2)}.`);
+                
+                // --- Logika Tanpa Lanjutan (Selection Mode) ---
+                if (isHighRiskMode) {
+                    cashOut(true, true); // Cashout paksa untuk Selection Mode
+                } else {
+                    // Logika Single Click Mode (Tidak Dipakai di fungsi ini)
+                }
+                
+            }, selectedCellsIndex.length * 70 + 800); 
+        }
+
+
+        // Function to redraw the board in HTML (Updated for 3D Flip)
+        function renderGrid() { 
+            gameGrid.innerHTML = '';
+            gameGrid.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`; 
+            
+            grid.forEach(cell => {
+                const wrapperDiv = document.createElement('div');
+                wrapperDiv.classList.add('cell-wrapper');
+                wrapperDiv.dataset.index = cell.index;
+                
+                const cellFront = document.createElement('div');
+                cellFront.classList.add('cell', 'cell-front');
+                
+                const cellBack = document.createElement('div');
+                cellBack.classList.add('cell', 'cell-back');
+                
+                // Logika Seleksi (Blok tetap hijau/terpilih)
+                if (selectedCellsIndex.includes(cell.index) && isSelectingBlocks) {
+                    wrapperDiv.classList.add('selected'); // Tambahkan kelas ke WRAPPER untuk animasi GLOW
+                    cellFront.classList.add('selected'); // Tambah kelas ke FRONT (untuk warna hijau)
+                } 
+                
+                // Logika UNGKAP (Jika game selesai atau sudah terungkap)
+                if (cell.isRevealed || startButton.textContent === 'START NEW ROUND') {
+                    wrapperDiv.classList.add('revealed');
+                    if (grid[cell.index].isBomb) {
+                         cellBack.textContent = '💣';
+                         cellBack.classList.add('bomb');
+                    } else {
+                         cellBack.textContent = '💎';
+                         cellBack.classList.add('diamond');
+                    }
+                }
+                
+                wrapperDiv.appendChild(cellFront);
+                wrapperDiv.appendChild(cellBack);
+                
+                // --- Logic Event Listener ---
+                if (isSelectingBlocks) {
+                    // Diizinkan klik untuk memilih/membatalkan di Fase Seleksi
+                    wrapperDiv.addEventListener('click', handleCellClick);
+                } else if (isGameActive && gameModeSelect.value === 'single' && !cell.isRevealed) {
+                    // Diizinkan klik di Fase Bermain Normal
+                    wrapperDiv.addEventListener('click', handleCellClick);
+                }
+
+                gameGrid.appendChild(wrapperDiv);
+            });
+        }
+
+        
+        // Handle Cell Click (DIPERBAIKI UNTUK MODE SELEKSI & 3D FLIP)
+        function handleCellClick(event) {
+            // Target harus cell-wrapper, karena event listener melekat di sana
+            const cellWrapper = event.currentTarget; 
+            const index = parseInt(cellWrapper.dataset.index);
+            const cell = grid[index];
+            
+            if (cell.isRevealed) return;
+
+            // Logika KLIK saat Selection Mode (Fase Pemilihan)
+            if (isSelectingBlocks && gameModeSelect.value === 'selection') {
+                const cellFront = cellWrapper.querySelector('.cell-front');
+                const arrayIndex = selectedCellsIndex.indexOf(index);
+                
+                if (arrayIndex > -1) {
+                    // Batalkan pilihan
+                    selectedCellsIndex.splice(arrayIndex, 1);
+                    cellWrapper.classList.remove('selected'); // Hapus glow
+                    cellFront.classList.remove('selected'); // Hapus warna hijau
+                    cellFront.textContent = ''; 
+                } else if (selectedCellsIndex.length < (GRID_SIZE * GRID_SIZE) - BOMB_COUNT) {
+                    // Pilih kotak
+                    selectedCellsIndex.push(index);
+                    cellWrapper.classList.add('selected'); // Tambah glow
+                    cellFront.classList.add('selected'); // Tambah warna hijau
+                    cellFront.textContent = ''; // Tidak ada centang
+                }
+
+                // Update status tombol start dan Payout
+                const selectedCount = selectedCellsIndex.length;
+                if (selectedCount >= MIN_SELECTION) {
+                    startButton.disabled = false;
+                } else {
+                    startButton.disabled = true;
+                }
+                startButton.textContent = `CONFIRM SELECTION (${selectedCount}/${MIN_SELECTION})`;
+                
+                calculateAssumedPayout(selectedCount); 
+                showMessage(`SELECTION MODE: Choose **${MIN_SELECTION}** cells. (${selectedCount}/${MIN_SELECTION})`);
+                return;
+            } 
+            
+            // Logika KLIK saat Game Aktif (Mode Bermain Normal/Single Click)
+            if (isGameActive && gameModeSelect.value === 'single') {
+                cell.isRevealed = true;
+                cellsRevealed++;
+
+                cellWrapper.removeEventListener('click', handleCellClick); // Hapus listener
+                cellWrapper.classList.add('revealed'); 
+
+                setTimeout(() => {
+                    const cellBack = cellWrapper.querySelector('.cell-back');
+                    
+                    if (cell.isBomb) {
+                        cellBack.textContent = '💣';
+                        cellBack.classList.add('bomb');
+                        showMessage(`BOOM! LOST ${formatCurrency(currentBet)}!`);
+                        endGame(false);
+                    } else {
+                        cellBack.textContent = '💎';
+                        cellBack.classList.add('diamond');
+                        
+                        currentMultiplier *= MULTIPLIER_PER_DIAMOND;
+                        currentPayout = currentBet * currentMultiplier;
+
+                        showMessage(`DIAMOND FOUND! MULTIPLIER x${currentMultiplier.toFixed(2)}`);
+                        updateDisplay();
+
+                        cashoutButton.disabled = false;
+                        
+                        if (cellsRevealed === (GRID_SIZE * GRID_SIZE) - BOMB_COUNT) {
+                            showMessage("JACKPOT! ALL DIAMONDS FOUND! PAYOUT COLLECTED.");
+                            cashOut(true); 
+                        }
+                    }
+                }, 500); // Tunggu animasi flip selesai
+            }
+        }
+        
+        function endGame(isWin) {
+            isGameActive = false;
+            cashoutButton.disabled = true;
+
+            let cellsToReveal = [];
+            grid.forEach((cell, index) => {
+                if (!cell.isRevealed) {
+                    cellsToReveal.push(index);
+                }
+            });
+            
+            // Logika Animasi Reveal Global
+            let delay = 0;
+            cellsToReveal.forEach((index, i) => {
+                const cell = grid[index];
+                cell.isRevealed = true; // Set blok menjadi terungkap
+
+                setTimeout(() => {
+                    const cellWrapper = gameGrid.querySelector(`[data-index="${index}"]`);
+                    const cellBack = cellWrapper ? cellWrapper.querySelector('.cell-back') : null;
+                    
+                    if (cellWrapper) {
+                        cellWrapper.classList.remove('selected'); // Hapus glow jika ada
+                        cellWrapper.classList.add('revealed');
+                        cellWrapper.removeEventListener('click', handleCellClick);
+                        
+                        setTimeout(() => {
+                            if (cellBack) {
+                                if (cell.isBomb) {
+                                    cellBack.textContent = '💣';
+                                    cellBack.classList.add('bomb');
+                                } else {
+                                    cellBack.textContent = '💎';
+                                    cellBack.classList.add('diamond');
+                                }
+                            }
+                        }, 150); 
+                    }
+                }, delay);
+                delay += 50; // Jeda 50ms per blok untuk efek berurutan
+            });
+            
+            // Jeda agar animasi reveal selesai sebelum reset
+            setTimeout(() => {
+                
+                // --- Langkah Reset Otomatis ---
+                startButton.textContent = "PLACE BET & START";
+                startButton.disabled = false;
+                betInput.disabled = false;
+                openSelectorButton.disabled = false;
+                topupIconTrigger.style.pointerEvents = 'auto'; // Aktifkan topup kembali
+                gameModeSelect.disabled = false; 
+                
+                isSelectingBlocks = false; // MATIKAN state seleksi setelah ronde berakhir
+                selectedCellsIndex = []; // Selalu kosongkan Selection List setelah ronde berakhir
+                
+                // Kosongkan multiplier & payout
+                currentMultiplier = 1.00;
+                currentPayout = 0.00;
+
+                // Render grid terakhir (semua terungkap) dan update status
+                renderGrid(); 
+                updateModeStatus(); 
+                
+            }, delay + 800); // Tunggu sampai semua animasi + jeda 800ms selesai
+
+            updateDisplay();
+        }
+        
+        function cashOut(showModal = true, forceEnd = false) {
+            if (!isGameActive && showModal && !forceEnd) return; 
+            
+            totalBalance += currentPayout;
+            
+            if (showModal) {
+                 modalPayoutAmount.textContent = formatCurrency(currentPayout);
+                 openModal('cashout-modal');
+            }
+
+            showMessage(`CASHOUT: ${formatCurrency(currentPayout)} ADDED TO BALANCE.`);
+            
+            endGame(true);
+        }
+        
+        // Fungsi untuk menangani input kode promosi
+        function handlePromoCode() {
+            const code = promoCodeInput.value.trim();
+            const VALID_CODE = 'zet77';
+
+            if (code === VALID_CODE) {
+                promoCodeMessage.textContent = '';
+                closeModal('promo-code-modal');
+                openModal('topup-amount-modal');
+                topupAmountInput.value = '50.00'; 
+                topupAmountMessage.textContent = '';
+            } else {
+                promoCodeMessage.textContent = 'Invalid promo code. Please try again.';
+            }
+        }
+        
+        // Fungsi untuk menangani input nominal top up
+        function handleTopupAmount() {
+            const amount = parseFloat(topupAmountInput.value);
+            const MIN_TOPUP = 10.00;
+
+            if (isNaN(amount) || amount < MIN_TOPUP) {
+                topupAmountMessage.textContent = `Minimum top up amount is ${formatCurrency(MIN_TOPUP)}.`;
+                return;
+            }
+            
+            totalBalance += amount;
+            
+            closeModal('topup-amount-modal');
+            updateDisplay(); 
+            showMessage(`SUCCESS! ${formatCurrency(amount)} ADDED to your balance via code ZET77!`);
+        }
+
+
+        // Function to update the score and multiplier display
+        function updateDisplay() {
+            // Di Selection Mode saat fase pemilihan, Payout/Multiplier ditampilkan sebagai Asumsi Payout Maksimal
+            if (isSelectingBlocks && gameModeSelect.value === 'selection') {
+                 calculateAssumedPayout(selectedCellsIndex.length);
+            } else {
+                // Logika normal saat game tidak aktif, atau Single Click Mode
+                multiplierDisplay.textContent = currentMultiplier.toFixed(2);
+                currentPayoutDisplay.textContent = formatCurrency(currentPayout); // Tetap format penuh untuk Payout
+            }
+            
+            // *** PERUBAHAN UTAMA: Gunakan formatBalance untuk Saldo ***
+            currentBalanceDisplay.textContent = formatBalance(totalBalance); 
+            
+            riskSummaryInfo.textContent = `(${BOMB_COUNT} Bombs / ${MULTIPLIER_PER_DIAMOND.toFixed(2)}x per Diamond)`;
+        }
+
+        function showMessage(msg) {
+            messageDisplay.innerHTML = msg; 
+        }
+        
+        // FUNGSI: Update Mode
+        function updateModeStatus() {
+            const selectedMode = gameModeSelect.value;
+            
+            if (selectedMode === 'selection') {
+                showMessage(`MODE: Selection Bet (High Risk). Choose ${MIN_SELECTION} cells. Potential +${SELECTION_BONUS_MULTIPLIER.toFixed(2)}x BONUS.`);
+            } else {
+                showMessage("MODE: Single Click (Normal). Click cells one by one to advance.");
+            }
+            
+            // Reset tampilan multiplier saat mode diubah
+            currentMultiplier = 1.00;
+            currentPayout = 0.00;
+            updateDisplay();
+            renderGrid();
+        }
+
+
+        // Event Listeners
+        startButton.addEventListener('click', handleStartGame);
+        cashoutButton.addEventListener('click', () => cashOut(true)); 
+
+        openSelectorButton.addEventListener('click', () => {
+            multiplierSlider.value = MULTIPLIER_PER_DIAMOND.toFixed(1); 
+            updateSliderDisplay();
+            openModal('selector-modal');
+        });
+        multiplierSlider.addEventListener('input', updateSliderDisplay);
+        confirmSelectionButton.addEventListener('click', confirmSelection);
+
+        // Event Listener BARU untuk ikon [+]
+        topupIconTrigger.addEventListener('click', () => {
+            promoCodeInput.value = ''; 
+            promoCodeMessage.textContent = '';
+            openModal('promo-code-modal');
+        });
+        
+        confirmPromoCodeButton.addEventListener('click', handlePromoCode);
+        confirmTopupAmountButton.addEventListener('click', handleTopupAmount);
+
+        // Event Listener untuk Mode
+        gameModeSelect.addEventListener('change', updateModeStatus);
+
+        // Initial setup on load
+        updateSliderDisplay(); 
+        updateDisplay();
+        renderGrid();
+        updateModeStatus();
+    </script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
