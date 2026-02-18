@@ -591,7 +591,9 @@
         let currentMultiplier = 1.00;
         let currentPayout = 0.00;
         let cellsRevealed = 0;
-        let totalBalance = INITIAL_BALANCE;
+        // Cek apakah ada saldo tersimpan? Kalau tidak, pakai 100.00
+        let savedBalance = localStorage.getItem('my_mines_balance');
+        let totalBalance = savedBalance ? parseFloat(savedBalance) : INITIAL_BALANCE;
         let selectedCellsIndex = [];
         
         // KUNCI: State Khusus untuk mengontrol klik di Fase Pemilihan (Mode Seleksi)
@@ -1188,7 +1190,7 @@
 
         // Function to update the score and multiplier display
         function updateDisplay() {
-            // Di Selection Mode saat fase pemilihan, Payout/Multiplier ditampilkan sebagai Asumsi Payout Maksimal
+            localStorage.setItem('my_mines_balance', totalBalance);
             if (isSelectingBlocks && gameModeSelect.value === 'selection') {
                  calculateAssumedPayout(selectedCellsIndex.length);
             } else {
@@ -1262,3 +1264,4 @@
   </body>
   
 </html>
+
